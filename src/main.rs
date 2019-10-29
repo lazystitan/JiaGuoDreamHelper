@@ -1,115 +1,128 @@
+use std::fs::File;
+use std::io::{Read, Error};
+use serde_json::Value;
+use serde_json::ser::Compound::Map;
 use std::collections::HashMap;
+use std::fmt;
+use std::fmt::Formatter;
 
-enum BuildingType {Commercial, Industrial, Living}
+enum BuildingTypes {
+    Industrial,
+    Commercial,
+    Housing
+}
+
+impl fmt::Display for BuildingTypes {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            BuildingTypes::Industrial => write!(f, "Industrial"),
+            BuildingTypes::Commercial => write!(f, "Commercial"),
+            BuildingTypes::Housing => write!(f, "Housing")
+        }
+    }
+}
+
+struct Buff(String, f64);
+
+impl fmt::Display for Buff {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{}-{}", self.0, self.1)
+    }
+}
 
 struct Building {
-    pub name : String,
-    pub b_type :  BuildingType,
-    pub revenue : u64,
-    pub buff : Vec<(String, u64)>,
+    name : String,
+    bd_type : BuildingTypes,
+    revenue : f64,
+    buff : Vec<Buff>
 }
 
-type Zone = [Option<Building>; 3];
-
-
-struct Global<'a> {
-    industrial_buildings : Zone,
-    commercial_buildings : Zone,
-    living_buildings : Zone,
-    buildings_map : HashMap<String, &'a Building>,
-    total_revenue : u64
+fn read_file(filename : &str) -> Result<String, Error> {
+    let mut result = String::new();
+    let mut file = File::open(&filename)?;
+    file.read_to_string(&mut result);
+    Ok(result)
 }
 
-impl<'a> Global<'a> {
-    fn new() -> Global<'a> {
-        Global {
-            industrial_buildings : [None ; 3],
-            commercial_buildings : [None ; 3],
-            living_buildings : [None ; 3],
-            buildings_map : HashMap::new(),
-            total_revenue : 0
-        }
-    }
-
-    fn add_building(&mut self, building : Building) -> Result<(), ()> {
-        let mut ready;
-        match building.b_type {
-            BuildingType::Industrial => ready = &mut self.industrial_buildings,
-            BuildingType::Commercial => ready = &mut self.commercial_buildings,
-            BuildingType::Living => ready = &mut self.living_buildings,
-        }
-
-        self.buildings_map.insert(building.name.clone(), &building);
-
-        for b in ready.iter_mut() {
-            if let None = Building {
-                b.replace(building);
-                break;
-                return Ok(());
-            }
-        }
-
-        Err(())
-    }
-
-    fn delete_building(&mut self, name : &String) -> Result<(), ()> {
-        match self.buildings_map.get(name) {
-            Some(b) => {
-                let mut ready;
-                match b.b_type {
-                    BuildingType::Industrial => ready = &mut self.industrial_buildings,
-                    BuildingType::Commercial => ready = &mut self.commercial_buildings,
-                    BuildingType::Living => ready = &mut self.living_buildings,
+impl Building {
+    fn new(json_data : Value) -> Result<Building, &'static str> {
+        let name;
+        let mut bd_type = BuildingTypes::Housing;
+        let revenue;
+        let mut buff= Vec::new();
+        let err = Err("failed to convert");
+        match json_data {
+            Value::Object(mut map) => {
+                if let Value::String(str) = map["name"].take() {
+                    name = str;
+                } else {
+                    return err;
                 }
 
-                self.buildings_map.remove(name);
-
-                for b in ready.iter_mut() {
-                    if let Some(temp) = b{
-                        if temp.name == *name {
-                            b.take();
-                            break;
-                        }
+                if let Value::String(t) = map["type"].take() {
+                    bd_type = if t == "industrial" {
+                        BuildingTypes::Industrial
+                    } else if t == "commercial" {
+                        BuildingTypes::Commercial
+                    } else if t == "housing" {
+                        BuildingTypes::Housing
+                    } else {
+                        return err;
                     }
                 }
 
-                Ok(())
-            },
-            None => Err(())
-        }
-    }
+                if let Value::Number(t) = map["revenue"].take() {
+                    revenue = t.as_f64().unwrap();
+                } else {
+                    return err;
+                }
 
-    fn total_revenue(&self) -> u64 {
-        let temp = 0;
-        for (this_name, building) in self.buildings_map.iter() {
-            temp += building.revenue;
-            for (name, n) in &building.buff {
-                temp += self.buildings_map.get(name).unwrap().revenue * (*n);
+                if let Value::Object(v) = map["buff"].take() {
+                    for i in v {
+                        if let Value::Number(n) = i.1 {
+                            buff.push(Buff(i.0, n.as_f64().unwrap()));
+                        } else {
+                            return err;
+                        }
+                    }
+                } else {
+                    return err;
+                }
+
             }
+            _ => return err
         }
-        temp
-    }
-
-    fn get_names(&self) -> [String ; 9]{
-        let mut result = ["".to_string(); 9];
-        let mut i = 0;
-        for (name, building) in &self.buildings_map {
-            result[i] = name.clone();
-            i = i + 1;
-        }
-        result
+        Ok(Building {
+            name,
+            bd_type,
+            revenue,
+            buff
+        })
     }
 }
 
+impl fmt::Display for Building {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "name : {}, type : {}, revenue : {}, ", self.name, self.bd_type, self.revenue);
+        write!(f, "[");
+        for b in &self.buff {
+            write!(f, "{}, ", b);
+        }
+        write!(f, "]")
+    }
+}
 
 fn main() {
-    let a : Option<i32> = None;
-    if let None = a {
-        println!("true");
-    }
-    let a = [1 ; 3];
-    for i in a.iter() {
-        println!("{}", i);
+    let content = read_file("content.json").unwrap();
+    let v : Value = serde_json::from_str(&content).unwrap();
+    let mut buildings = Vec::new();
+    if let Value::Array(v) = v {
+        for item in v {
+            buildings.push(Building::new(item).unwrap());
+        }
     }
 
+    for b in &buildings {
+        println!("{}", b);
+    }
 }
