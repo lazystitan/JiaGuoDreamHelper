@@ -3,50 +3,45 @@ use std::fmt;
 use std::fmt::Formatter;
 use std::convert::{TryFrom, TryInto};
 use crate::convert::Convert;
+use crate::buff::Buff;
 
-pub enum BuildingTypes {
+pub enum BuildingType {
     Industrial,
     Commercial,
     Housing
 }
 
-impl TryFrom<String> for BuildingTypes {
+impl TryFrom<String> for BuildingType {
     type Error = &'static str;
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
             if value == "industrial" {
-                Ok(BuildingTypes::Industrial)
+                Ok(BuildingType::Industrial)
             } else if value == "commercial" {
-                Ok(BuildingTypes::Commercial)
+                Ok(BuildingType::Commercial)
             } else if value == "housing" {
-                Ok(BuildingTypes::Housing)
+                Ok(BuildingType::Housing)
             } else {
                 return Err("Cannot convert to building types");
             }
     }
 }
 
-impl fmt::Display for BuildingTypes {
+impl fmt::Display for BuildingType {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            BuildingTypes::Industrial => write!(f, "Industrial"),
-            BuildingTypes::Commercial => write!(f, "Commercial"),
-            BuildingTypes::Housing => write!(f, "Housing")
+            BuildingType::Industrial => write!(f, "Industrial"),
+            BuildingType::Commercial => write!(f, "Commercial"),
+            BuildingType::Housing => write!(f, "Housing")
         }
     }
 }
 
-pub struct Buff(String, f64);
 
-impl fmt::Display for Buff {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{}-{}", self.0, self.1)
-    }
-}
 
 pub struct Building {
     name : String,
-    bd_type : BuildingTypes,
+    bd_type : BuildingType,
     revenue : f64,
     buff : Vec<Buff>
 }
@@ -56,7 +51,7 @@ impl Building {
         &self.name
     }
 
-    pub fn get_type(&self) -> &BuildingTypes {
+    pub fn get_type(&self) -> &BuildingType {
         &self.bd_type
     }
 
@@ -93,23 +88,6 @@ impl Convert<Value> for f64 {
                 }
             }
             _ => err
-        }
-    }
-}
-
-impl Convert<Value> for Vec<Buff> {
-    type Error = &'static str;
-
-    fn convert(value: Value) -> Result<Self, Self::Error> {
-        match value {
-            Value::Object(map) => {
-                let mut result = Vec::with_capacity(map.len());
-                for (key , item) in map {
-                    result.push(Buff(key, f64::convert(item)?));
-                }
-                Ok(result)
-            },
-            _ => Err("Cannot cast to Vec<Buff>")
         }
     }
 }

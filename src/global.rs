@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use crate::global_buff::GlobalBuff;
-use crate::buildings::{Building, BuildingTypes};
+use crate::buildings::{Building, BuildingType};
 use std::rc::Rc;
 
 type Rbd = Rc<Building>;
@@ -36,15 +36,20 @@ impl Global {
     pub fn add_building(&mut self, building : Building) -> Result<(), &'static str> {
         let name = building.get_name().to_string();
         let r = Rc::new(building);
+
+        if self.buildings_map.len() == 9 {
+            return Err("Not enough space");
+        }
+
         match self.buildings_map.insert(name.clone(), r.clone()) {
             Some(_) => return Err("Already exist a building has same name"),
             None => ()
         }
         let temp;
         match r.get_type() {
-            BuildingTypes::Industrial => temp = &mut self.industrial_map,
-            BuildingTypes::Commercial => temp = &mut self.commercial_map,
-            BuildingTypes::Housing => temp = &mut self.housing_map,
+            BuildingType::Industrial => temp = &mut self.industrial_map,
+            BuildingType::Commercial => temp = &mut self.commercial_map,
+            BuildingType::Housing => temp = &mut self.housing_map,
         }
 
         if temp.len() >= 3 {

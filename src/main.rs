@@ -2,6 +2,7 @@ mod buildings;
 mod convert;
 mod global_buff;
 mod global;
+mod buff;
 
 use serde_json::Value;
 use buildings::Building;

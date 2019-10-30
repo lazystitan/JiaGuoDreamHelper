@@ -41,7 +41,7 @@ impl Convert<Value> for GlobalBuffType {
                     Ok(GlobalBuffType::All)
                 } else if s == "online" {
                     Ok(GlobalBuffType::Online)
-                } else if s == "offlin" {
+                } else if s == "offline" {
                     Ok(GlobalBuffType::Offline)
                 } else {
                     Err("Cannot convert to GlobalBuff")
