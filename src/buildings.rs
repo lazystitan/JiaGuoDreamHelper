@@ -2,6 +2,7 @@ use serde_json::Value;
 use std::fmt;
 use std::fmt::Formatter;
 use std::convert::{TryFrom, TryInto};
+use crate::convert::Convert;
 
 pub enum BuildingTypes {
     Industrial,
@@ -50,10 +51,7 @@ pub struct Building {
     buff : Vec<Buff>
 }
 
-pub trait Convert<T> : Sized {
-    type Error;
-    fn convert(value : T) -> Result<Self, Self::Error>;
-}
+
 
 impl Convert<Value> for String {
     type Error = &'static str;
@@ -125,11 +123,25 @@ impl fmt::Display for Building {
             write!(f, "[]")?;
             return Ok(());
         }
-        write!(f, "name : {}, type : {}, revenue : {}, ", self.name, self.bd_type, self.revenue)?;
+        write!(f, "Building name : {}, type : {}, revenue : {}, ", self.name, self.bd_type, self.revenue)?;
         write!(f, "[ ")?;
         for i in 0..(&self.buff.len()-1) {
             write!(f, "{}, ", &self.buff[i])?;
         }
         write!(f, "{} ]", self.buff.last().unwrap())
+    }
+}
+
+impl Convert<Value> for Vec<Building> {
+    type Error = &'static str;
+
+    fn convert(value: Value) -> Result<Self, Self::Error> {
+        let mut buildings = Vec::new();
+        if let Value::Array(v) = value {
+            for item in v {
+                buildings.push(Building::convert(item)?);
+            }
+        }
+        Ok(buildings)
     }
 }

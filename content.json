@@ -1,19 +1,33 @@
-[
-    {
-        "name" : "test1",
-        "revenue" : 10000,
-        "type" : "commercial",
-        "buff" : {
-                "test2" : 1.2,
-                "test3" : 1.4
+{
+    "global" : [
+        {
+            "name" : "global1",
+            "type" : "all",
+            "buff" : 1.4
+        },
+        {
+            "name" : "global1",
+            "type" : "online",
+            "buff" : 2.0
         }
-    },
-    {
-        "name" : "test2",
-        "revenue" : 20000,
-        "type" : "industrial",
-        "buff" : {
-            "test1" : 1.5
+    ],
+    "buildings": [
+        {
+            "name": "test1",
+            "revenue": 10000,
+            "type": "commercial",
+            "buff": {
+                "test2": 1.2,
+                "test3": 1.4
+            }
+        },
+        {
+            "name": "test2",
+            "revenue": 20000,
+            "type": "industrial",
+            "buff": {
+                "test1": 1.5
+            }
         }
-    }
-]
+    ]
+}
