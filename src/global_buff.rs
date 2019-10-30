@@ -55,6 +55,20 @@ impl Convert<Value> for GlobalBuffType {
 
 pub struct GlobalBuff(String, GlobalBuffType, f64);
 
+impl GlobalBuff {
+    pub fn get_name(&self) -> &str {
+        &self.0
+    }
+
+    pub fn get_type(&self) -> &GlobalBuffType {
+        &self.1
+    }
+
+    pub fn get_effect(&self) -> f64 {
+        self.2
+    }
+}
+
 impl fmt::Display for GlobalBuff {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "GlobalBuff name : {}, type : {}, effect : {}", self.0, self.1, self.2)

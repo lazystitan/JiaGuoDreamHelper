@@ -51,7 +51,23 @@ pub struct Building {
     buff : Vec<Buff>
 }
 
+impl Building {
+    pub fn get_name(&self) -> &str {
+        &self.name
+    }
 
+    pub fn get_type(&self) -> &BuildingTypes {
+        &self.bd_type
+    }
+
+    pub fn get_revenue(&self) -> f64 {
+        self.revenue
+    }
+
+    pub fn get_buff(&self) -> &Vec<Buff> {
+        &self.buff
+    }
+}
 
 impl Convert<Value> for String {
     type Error = &'static str;

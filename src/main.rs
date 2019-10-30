@@ -1,6 +1,7 @@
 mod buildings;
 mod convert;
 mod global_buff;
+mod global;
 
 use serde_json::Value;
 use buildings::Building;
@@ -9,6 +10,7 @@ use std::fs::File;
 use std::io::Read;
 use convert::Convert;
 use crate::global_buff::GlobalBuff;
+use crate::global::Global;
 
 fn read_file(filename : &str) -> Result<String, io::Error> {
     let mut result = String::new();
@@ -26,13 +28,24 @@ fn process() -> Result<(), &'static str> {
         buildings = Vec::convert(map["buildings"].take())?;
         global_buff = Vec::convert(map["global"].take())?;
     }
-    for b in &buildings {
-        println!("{}", b);
+
+    let mut g = Global::new();
+
+    for b in buildings {
+        g.add_building(b)?;
     }
 
-    for g in &global_buff {
-        println!("{}", g);
+    for b in global_buff {
+        g.add_global_buff(b)?;
     }
+
+    let names = g.get_building_names();
+    for n in &names {
+        println!("{}", n);
+    }
+
+    println!("{}", g.is_full());
+
     Ok(())
 }
 
