@@ -2,8 +2,8 @@ use serde_json::Value;
 use std::fmt;
 use std::fmt::Formatter;
 use std::convert::{TryFrom, TryInto};
+use crate::buff::BuildingBuff;
 use crate::convert::Convert;
-use crate::buff::Buff;
 
 pub enum BuildingType {
     Industrial,
@@ -42,8 +42,8 @@ impl fmt::Display for BuildingType {
 pub struct Building {
     name : String,
     bd_type : BuildingType,
-    revenue : f64,
-    buff : Vec<Buff>
+    income: f64,
+    buff : Vec<BuildingBuff>
 }
 
 impl Building {
@@ -55,11 +55,11 @@ impl Building {
         &self.bd_type
     }
 
-    pub fn get_revenue(&self) -> f64 {
-        self.revenue
+    pub fn get_income(&self) -> f64 {
+        self.income
     }
 
-    pub fn get_buff(&self) -> &Vec<Buff> {
+    pub fn get_buff(&self) -> &Vec<BuildingBuff> {
         &self.buff
     }
 }
@@ -101,8 +101,8 @@ impl Convert<Value> for Building {
                 let result = Building {
                     name: String::convert(map["name"].take())?,
                     bd_type: String::convert(map["type"].take())?.try_into()?,
-                    revenue: f64::convert(map["revenue"].take())?,
-                    buff: Vec::convert(map["buff"].take())?
+                    income: f64::convert(map["income"].take())?,
+                    buff: Vec::convert(map["effect"].take())?
                 };
                 Ok(result)
             },
@@ -117,7 +117,7 @@ impl fmt::Display for Building {
             write!(f, "[]")?;
             return Ok(());
         }
-        write!(f, "Building name : {}, type : {}, revenue : {}, ", self.name, self.bd_type, self.revenue)?;
+        write!(f, "Building name : {}, type : {}, revenue : {}, ", self.name, self.bd_type, self.income)?;
         write!(f, "[ ")?;
         for i in 0..(&self.buff.len()-1) {
             write!(f, "{}, ", &self.buff[i])?;

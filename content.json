@@ -1,97 +1,97 @@
 {
-    "global" : [
+    "policy" : [
         {
             "name" : "g1",
             "type" : "all",
-            "buff" : 1.4
+            "effect": 1.4
         },
         {
             "name" : "g2",
             "type" : "all",
-            "buff" : 1.4
+            "effect": 1.4
         }
     ],
     "buildings": [
         {
             "name": "木材厂",
-            "revenue": 400000000000,
+            "income": 400000000000,
             "type": "industrial",
             "level" : 851,
-            "buff": {
+            "effect": {
                 "normal(木屋)": 3
             }
         },
         {
             "name": "造纸厂",
-            "revenue": 1140000000000,
+            "income": 1140000000000,
             "type": "industrial",
             "level" : 839,
-            "buff": {
+            "effect": {
                 "normal(图书城)": 4
             }
         },
         {
             "name": "纺织厂",
-            "revenue": 786000000000,
+            "income": 786000000000,
             "type": "industrial",
             "level": 825,
-            "buff": {
+            "effect": {
                 "normal(服装店)": 4,
                 "commercial": 0.6
             }
         },
         {
             "name": "图书城",
-            "revenue": 786000000000,
+            "income": 786000000000,
             "type": "commercial",
             "level" : 825,
-            "buff": {
+            "effect": {
                 "normal(学校)": 4,
                 "normal(造纸厂)": 4
             }
         },
         {
             "name": "服装店",
-            "revenue": 196000000000,
+            "income": 196000000000,
             "type": "commercial",
             "level" : 825,
-            "buff": {
+            "effect": {
                 "normal(纺织厂)": 3
             }
         },
         {
             "name": "学校",
-            "revenue": 196000000000,
+            "income": 196000000000,
             "type": "commercial",
             "level" : 825,
-            "buff": {
+            "effect": {
                 "normal(图书城)": 3
             }
         },
         {
             "name": "平房",
-            "revenue": 888000000000,
+            "income": 888000000000,
             "type": "housing",
             "level" : 826,
-            "buff": {
+            "effect": {
                 "housing": 0.8
             }
         },
         {
             "name": "木屋",
-            "revenue": 807000000000,
+            "income": 807000000000,
             "type": "housing",
             "level" : 826,
-            "buff": {
+            "effect": {
                 "normal(木材厂)": 4
             }
         },
         {
             "name": "人才公寓",
-            "revenue": 275000000000,
+            "income": 275000000000,
             "type": "housing",
             "level" : 825,
-            "buff": {
+            "effect": {
                 "online": 0.6,
                 "industrial": 0.45
             }

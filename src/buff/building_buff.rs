@@ -1,11 +1,8 @@
 use std::fmt;
-use std::fmt::Formatter;
-
 use serde_json::Value;
+use crate::convert::Convert;
 
-use super::convert::Convert;
-
-pub enum BuffType {
+pub enum BuildingBuffType {
     Normal(String),
     Industrial,
     Commercial,
@@ -15,36 +12,36 @@ pub enum BuffType {
     Offline
 }
 
-impl fmt::Display for BuffType {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+impl fmt::Display for BuildingBuffType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            BuffType::Normal(s) => write!(f, "Normal ( {} )", s),
-            BuffType::Offline =>  write!(f, "offline"),
-            BuffType::Online => write!(f, "online"),
-            BuffType::All => write!(f, "all"),
-            BuffType::Industrial => write!(f, "industrial"),
-            BuffType::Commercial => write!(f, "commercial"),
-            BuffType::Housing => write!(f, "housing"),
+            BuildingBuffType::Normal(s) => write!(f, "Normal ( {} )", s),
+            BuildingBuffType::Offline =>  write!(f, "offline"),
+            BuildingBuffType::Online => write!(f, "online"),
+            BuildingBuffType::All => write!(f, "all"),
+            BuildingBuffType::Industrial => write!(f, "industrial"),
+            BuildingBuffType::Commercial => write!(f, "commercial"),
+            BuildingBuffType::Housing => write!(f, "housing"),
         }
     }
 }
 
-impl Convert<String> for BuffType {
+impl Convert<String> for BuildingBuffType {
     type Error = &'static str;
 
     fn convert(value: String) -> Result<Self, Self::Error> {
         if value == "industrial" {
-            Ok(BuffType::Industrial)
+            Ok(BuildingBuffType::Industrial)
         } else if value == "commercial" {
-            Ok(BuffType::Commercial)
+            Ok(BuildingBuffType::Commercial)
         } else if value == "housing" {
-            Ok(BuffType::Housing)
+            Ok(BuildingBuffType::Housing)
         } else if value == "all" {
-            Ok(BuffType::All)
+            Ok(BuildingBuffType::All)
         } else if value == "online" {
-            Ok(BuffType::Online)
+            Ok(BuildingBuffType::Online)
         } else if value == "offline" {
-            Ok(BuffType::Offline)
+            Ok(BuildingBuffType::Offline)
         } else {
             let mut s = value.split('(');
             if let Some(part1) = s.next() {
@@ -62,7 +59,7 @@ impl Convert<String> for BuffType {
                 if &part2[part2.len() - 1..] != ")" {
                     return Err("Cannot convert to BuffType");
                 }
-                return Ok(BuffType::Normal(part2[0 .. part2.len() - 1].to_string()))
+                return Ok(BuildingBuffType::Normal(part2[0 .. part2.len() - 1].to_string()))
 
             } else {
                 return Err("Cannot convert to BuffType");
@@ -72,11 +69,11 @@ impl Convert<String> for BuffType {
     }
 }
 
-pub struct Buff(pub BuffType, pub f64);
+pub struct BuildingBuff(pub BuildingBuffType, pub f64);
 
 
 
-impl Convert<Value> for Vec<Buff> {
+impl Convert<Value> for Vec<BuildingBuff> {
     type Error = &'static str;
 
     fn convert(value: Value) -> Result<Self, Self::Error> {
@@ -84,7 +81,7 @@ impl Convert<Value> for Vec<Buff> {
             Value::Object(map) => {
                 let mut result = Vec::with_capacity(map.len());
                 for (key , item) in map {
-                    result.push(Buff::new(BuffType::convert(key)?, f64::convert(item)?));
+                    result.push(BuildingBuff::new(BuildingBuffType::convert(key)?, f64::convert(item)?));
                 }
                 Ok(result)
             },
@@ -93,37 +90,14 @@ impl Convert<Value> for Vec<Buff> {
     }
 }
 
-impl Buff {
-    pub fn new(name : BuffType, effect : f64) -> Self {
-        Buff(name, effect)
+impl BuildingBuff {
+    pub fn new(name : BuildingBuffType, effect : f64) -> Self {
+        BuildingBuff(name, effect)
     }
 }
 
-impl fmt::Display for Buff {
+impl fmt::Display for BuildingBuff {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}-{}", self.0, self.1)
-    }
-}
-
-#[cfg(test)]
-mod test {
-    use super::*;
-
-    #[test]
-    fn test1() {
-        let a = "normal(BuffName)".to_string();
-        let b = BuffType::convert(a).unwrap();
-        if let BuffType::Normal(s) = b {
-            assert_eq!(s, "BuffName".to_string());
-        }
-    }
-
-    #[test]
-    fn test2() {
-        let a = "normal(BuffName))".to_string();
-        let b = BuffType::convert(a).unwrap();
-        if let BuffType::Normal(s) = b {
-            assert_eq!(s, "BuffName)".to_string());
-        }
     }
 }

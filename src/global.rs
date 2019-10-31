@@ -1,15 +1,13 @@
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use super::GlobalBuff;
 use crate::buildings::{Building, BuildingType};
-use crate::buff::{Buff, BuffType};
-use crate::global_buff::GlobalBuffType;
+use crate::buff::{BuildingBuffType, PolicyBuffType, PolicyBuff, BuildingBuff};
 
 type Rbd = Rc<Building>;
 
 pub struct Global {
-    global_buff_map : HashMap<String, GlobalBuff>,
+    global_buff_map : HashMap<String, PolicyBuff>,
     buildings_map : HashMap<String, Rbd>,
     industrial_map: HashMap<String, Rbd>,
     commercial_map : HashMap<String, Rbd>,
@@ -63,7 +61,7 @@ impl Global {
         }
     }
 
-    pub fn add_global_buff(&mut self, buff : GlobalBuff) -> Result<(), &'static str> {
+    pub fn add_global_buff(&mut self, buff : PolicyBuff) -> Result<(), &'static str> {
         let name = buff.get_name().to_string();
         match self.global_buff_map.insert(name, buff) {
             Some(_) => Err("Already exist a global buff has same name"),
@@ -75,31 +73,31 @@ impl Global {
         self.buildings_map.keys().map(|x| x.clone() ).collect()
     }
 
-    fn get_class_revenue(map : &HashMap<String, Rbd>, effect : f64) -> f64 {
+    fn get_class_income(map : &HashMap<String, Rbd>, effect : f64) -> f64 {
         let mut sum = 0.0;
         for (_ , b_) in map {
-            sum = sum + b_.get_revenue();
+            sum = sum + b_.get_income();
         }
         sum * effect
     }
 
-    pub fn get_online_revenue(&self) -> f64 {
+    pub fn get_online_income(&self) -> f64 {
         let mut result = 0.0;
 
         for (_ , b) in &self.buildings_map {
-            result = result + b.get_revenue();
-            for Buff(buff_type, effect) in b.get_buff() {
+            result = result + b.get_income();
+            for BuildingBuff(buff_type, effect) in b.get_buff() {
                 result +=  match buff_type {
-                    BuffType::Industrial => Self::get_class_revenue(&self.industrial_map, *effect),
-                    BuffType::Commercial => Self::get_class_revenue(&self.commercial_map, *effect),
-                    BuffType::Housing => Self::get_class_revenue(&self.housing_map, *effect),
-                    BuffType::All => Self::get_class_revenue(&self.buildings_map, *effect),
-                    BuffType::Online => Self::get_class_revenue(&self.buildings_map, *effect),
-                    BuffType::Offline => 0.0,
-                    BuffType::Normal(name) => {
+                    BuildingBuffType::Industrial => Self::get_class_income(&self.industrial_map, *effect),
+                    BuildingBuffType::Commercial => Self::get_class_income(&self.commercial_map, *effect),
+                    BuildingBuffType::Housing => Self::get_class_income(&self.housing_map, *effect),
+                    BuildingBuffType::All => Self::get_class_income(&self.buildings_map, *effect),
+                    BuildingBuffType::Online => Self::get_class_income(&self.buildings_map, *effect),
+                    BuildingBuffType::Offline => 0.0,
+                    BuildingBuffType::Normal(name) => {
                         match self.buildings_map.get(name) {
                             Some(b_) => {
-                                b_.get_revenue() * *effect
+                                b_.get_income() * *effect
                             },
                             None => 0.0
                         }
@@ -110,12 +108,12 @@ impl Global {
 
         for (_, gb) in &self.global_buff_map {
             result += match gb.get_type() {
-                GlobalBuffType::Industrial => Self::get_class_revenue(&self.industrial_map, gb.get_effect()),
-                GlobalBuffType::Commercial => Self::get_class_revenue(&self.commercial_map, gb.get_effect()),
-                GlobalBuffType::Housing => Self::get_class_revenue(&self.housing_map, gb.get_effect()),
-                GlobalBuffType::All => Self::get_class_revenue(&self.buildings_map, gb.get_effect()),
-                GlobalBuffType::Online => Self::get_class_revenue(&self.buildings_map, gb.get_effect()),
-                GlobalBuffType::Offline => 0.0,
+                PolicyBuffType::Industrial => Self::get_class_income(&self.industrial_map, gb.get_effect()),
+                PolicyBuffType::Commercial => Self::get_class_income(&self.commercial_map, gb.get_effect()),
+                PolicyBuffType::Housing => Self::get_class_income(&self.housing_map, gb.get_effect()),
+                PolicyBuffType::All => Self::get_class_income(&self.buildings_map, gb.get_effect()),
+                PolicyBuffType::Online => Self::get_class_income(&self.buildings_map, gb.get_effect()),
+                PolicyBuffType::Offline => 0.0,
             };
         }
 

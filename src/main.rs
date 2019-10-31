@@ -1,17 +1,18 @@
 mod buildings;
 mod convert;
-mod global_buff;
 mod global;
 mod buff;
 
-use serde_json::Value;
-use buildings::Building;
 use std::io;
-use std::fs::File;
 use std::io::Read;
+use std::fs::File;
+
+use serde_json::Value;
+
 use convert::Convert;
-use global_buff::GlobalBuff;
+use buildings::Building;
 use global::Global;
+use buff::PolicyBuff;
 
 fn read_file(filename : &str) -> Result<String, io::Error> {
     let mut result = String::new();
@@ -23,11 +24,11 @@ fn read_file(filename : &str) -> Result<String, io::Error> {
 fn process() -> Result<(), &'static str> {
     let content = read_file("content.json").unwrap();
     let v : Value = serde_json::from_str(&content).unwrap();
-    let mut global_buff : Vec<GlobalBuff> = Vec::new();
+    let mut global_buff : Vec<PolicyBuff> = Vec::new();
     let mut buildings : Vec<Building> = Vec::new();
     if let  Value::Object(mut map) = v {
         buildings = Vec::convert(map["buildings"].take())?;
-        global_buff = Vec::convert(map["global"].take())?;
+        global_buff = Vec::convert(map["policy"].take())?;
     }
 
     let mut g = Global::new();
@@ -45,7 +46,7 @@ fn process() -> Result<(), &'static str> {
         println!("{}", n);
     }
 
-    println!("{}", g.get_online_revenue());
+    println!("{}", g.get_online_income());
 
     println!("{}", g.is_full());
 
@@ -54,6 +55,6 @@ fn process() -> Result<(), &'static str> {
 
 fn main() {
     process().unwrap();
-    let num = 30_0969_0000_0000;
+//    let num : u64 = 30_0969_0000_0000;
 //    test();
 }
