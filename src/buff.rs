@@ -1,7 +1,9 @@
 use std::fmt;
-use crate::convert::Convert;
+use std::fmt::Formatter;
+
 use serde_json::Value;
-use std::fmt::{Formatter, Error};
+
+use super::convert::Convert;
 
 pub enum BuffType {
     Normal(String),
@@ -70,7 +72,8 @@ impl Convert<String> for BuffType {
     }
 }
 
-pub struct Buff(BuffType, f64);
+pub struct Buff(pub BuffType, pub f64);
+
 
 
 impl Convert<Value> for Vec<Buff> {

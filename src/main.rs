@@ -10,8 +10,8 @@ use std::io;
 use std::fs::File;
 use std::io::Read;
 use convert::Convert;
-use crate::global_buff::GlobalBuff;
-use crate::global::Global;
+use global_buff::GlobalBuff;
+use global::Global;
 
 fn read_file(filename : &str) -> Result<String, io::Error> {
     let mut result = String::new();
@@ -45,6 +45,8 @@ fn process() -> Result<(), &'static str> {
         println!("{}", n);
     }
 
+    println!("{}", g.get_online_revenue());
+
     println!("{}", g.is_full());
 
     Ok(())
@@ -52,4 +54,6 @@ fn process() -> Result<(), &'static str> {
 
 fn main() {
     process().unwrap();
+    let num = 30_0969_0000_0000;
+//    test();
 }

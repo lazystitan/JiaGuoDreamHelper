@@ -1,7 +1,9 @@
-use crate::convert::Convert;
-use serde_json::Value;
 use std::fmt;
 use std::fmt::Formatter;
+
+use serde_json::Value;
+
+use crate::convert::Convert;
 
 pub enum GlobalBuffType {
     Industrial,
