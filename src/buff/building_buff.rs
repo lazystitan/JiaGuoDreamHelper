@@ -1,7 +1,9 @@
 use std::fmt;
 use serde_json::Value;
 use crate::convert::Convert;
+use std::rc::Rc;
 
+#[derive(Eq, PartialEq, Hash)]
 pub enum BuildingBuffType {
     Normal(String),
     Industrial,
@@ -73,7 +75,7 @@ pub struct BuildingBuff(pub BuildingBuffType, pub f64);
 
 
 
-impl Convert<Value> for Vec<BuildingBuff> {
+impl Convert<Value> for Vec<Rc<BuildingBuff>> {
     type Error = &'static str;
 
     fn convert(value: Value) -> Result<Self, Self::Error> {
@@ -81,7 +83,7 @@ impl Convert<Value> for Vec<BuildingBuff> {
             Value::Object(map) => {
                 let mut result = Vec::with_capacity(map.len());
                 for (key , item) in map {
-                    result.push(BuildingBuff::new(BuildingBuffType::convert(key)?, f64::convert(item)?));
+                    result.push(Rc::new(BuildingBuff::new(BuildingBuffType::convert(key)?, f64::convert(item)?)));
                 }
                 Ok(result)
             },
@@ -99,5 +101,59 @@ impl BuildingBuff {
 impl fmt::Display for BuildingBuff {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}-{}", self.0, self.1)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use std::collections::HashMap;
+
+    #[test]
+    fn test1() {
+        let a = BuildingBuffType::Commercial;
+        let b = BuildingBuffType::Commercial;
+        assert!(a == b);
+    }
+
+    #[test]
+    fn test2() {
+        let a = BuildingBuffType::Commercial;
+        let b = BuildingBuffType::Industrial;
+        assert!(!(a == b))
+    }
+
+    #[test]
+    fn test3() {
+        let a = BuildingBuffType::Normal("123".to_string());
+        let b = BuildingBuffType::Industrial;
+        assert!(!(a == b))
+    }
+
+    #[test]
+    fn test4() {
+        let a = BuildingBuffType::Normal("123".to_string());
+        let b = BuildingBuffType::Normal("123".to_string());
+        assert!(a == b)
+    }
+
+    #[test]
+    fn test5() {
+        let a = BuildingBuffType::Normal("321".to_string());
+        let b = BuildingBuffType::Normal("123".to_string());
+        assert!(a != b)
+    }
+
+    #[test]
+    fn test6() {
+        let mut m = HashMap::new();
+        let a = BuildingBuffType::Industrial;
+        m.insert(a, vec![12,3,4]);
+        let b = BuildingBuffType::Normal("Last".to_string());
+        m.insert(b, vec![2,34]);
+        match m.get_mut(&BuildingBuffType::Normal("Last".to_string())) {
+            Some(v) => v.push(4),
+            None => (),
+        }
     }
 }

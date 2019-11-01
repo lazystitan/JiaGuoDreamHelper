@@ -4,6 +4,7 @@ use std::fmt::Formatter;
 use std::convert::{TryFrom, TryInto};
 use crate::buff::BuildingBuff;
 use crate::convert::Convert;
+use std::rc::Rc;
 
 pub enum BuildingType {
     Industrial,
@@ -42,8 +43,10 @@ impl fmt::Display for BuildingType {
 pub struct Building {
     name : String,
     bd_type : BuildingType,
+    level : u32,
+    star : u32,
     income: f64,
-    buff : Vec<BuildingBuff>
+    buff : Vec<Rc<BuildingBuff>>
 }
 
 impl Building {
@@ -59,7 +62,7 @@ impl Building {
         self.income
     }
 
-    pub fn get_buff(&self) -> &Vec<BuildingBuff> {
+    pub fn get_buff(&self) -> &Vec<Rc<BuildingBuff>> {
         &self.buff
     }
 }
@@ -100,9 +103,11 @@ impl Convert<Value> for Building {
             Value::Object(mut map) => {
                 let result = Building {
                     name: String::convert(map["name"].take())?,
-                    bd_type: String::convert(map["type"].take())?.try_into()?,
-                    income: f64::convert(map["income"].take())?,
-                    buff: Vec::convert(map["effect"].take())?
+                    bd_type : String::convert(map["type"].take())?.try_into()?,
+                    level : 0,
+                    star : 0,
+                    income : f64::convert(map["income"].take())?,
+                    buff : Vec::convert(map["effect"].take())?
                 };
                 Ok(result)
             },
