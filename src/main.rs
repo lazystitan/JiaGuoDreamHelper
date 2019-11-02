@@ -38,7 +38,7 @@ fn process() -> Result<(), &'static str> {
     }
 
     for b in global_buff {
-        g.add_global_buff(b)?;
+        g.add_policy_buff(b)?;
     }
 
     let names = g.get_building_names();
@@ -57,5 +57,7 @@ fn main() {
     process().unwrap();
 //    let num : u64 = 30_096_900_000_000;
 //    let num : u64 = 50_898_100_000_000;
+//    let num : u64 = 1_787_285_321_811_827_000_000_000;
+//    let num : u64 = 135_169_420_000_000;
 //    test();
 }

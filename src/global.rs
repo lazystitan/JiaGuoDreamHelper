@@ -3,6 +3,7 @@ use std::rc::Rc;
 
 use crate::buildings::{Building, BuildingType};
 use crate::buff::{BuildingBuffType, PolicyBuffType, PolicyBuff, BuildingBuff};
+use std::hash::Hash;
 
 type Rb = Rc<Building>;
 type Vrb = Vec<Rc<BuildingBuff>>;
@@ -96,8 +97,74 @@ impl BuildingBuffMap {
     }
 }
 
+///```
+///pub enum PolicyBuffType {
+///    Industrial,
+///    Commercial,
+///    Housing,
+///    All,
+///    Online,
+///    Offline
+///}
+///pub struct PolicyBuff(String, PolicyBuffType, f64);
+/// ```
+
+struct PolicyBuffMap(HashMap<PolicyBuffType, Vec<PolicyBuff>>);
+
+impl PolicyBuffMap {
+    fn new() -> PolicyBuffMap {
+        let mut map = HashMap::new();
+        map.insert(PolicyBuffType::Industrial, Vec::new());
+        map.insert(PolicyBuffType::Commercial, Vec::new());
+        map.insert(PolicyBuffType::Housing, Vec::new());
+        map.insert(PolicyBuffType::All, Vec::new());
+        map.insert(PolicyBuffType::Online, Vec::new());
+        map.insert(PolicyBuffType::Offline, Vec::new());
+
+        PolicyBuffMap(map)
+    }
+
+    fn add_policy(&mut self, policy : PolicyBuff) -> Result<(), ThisError> {
+        self.0.get_mut(policy.get_type()).unwrap().push(policy);
+        Ok(())
+    }
+
+    fn get_effect(&self, building_type : &BuildingType, online : bool) -> f64 {
+        let mut effect = 0.0;
+
+        for p in self.0.get(&PolicyBuffType::All).unwrap() {
+            effect += p.get_effect();
+        }
+
+        let temp;
+        match building_type {
+            BuildingType::Industrial => temp = self.0.get(&PolicyBuffType::Industrial).unwrap(),
+            BuildingType::Commercial => temp = self.0.get(&PolicyBuffType::Commercial).unwrap(),
+            BuildingType::Housing => temp = self.0.get(&PolicyBuffType::Housing).unwrap()
+        }
+
+        for p in temp {
+            effect += p.get_effect();
+        }
+
+        if online {
+            for p in self.0.get(&PolicyBuffType::Online).unwrap() {
+                effect += p.get_effect();
+            }
+        } else {
+            for p in self.0.get(&PolicyBuffType::Offline).unwrap() {
+                effect += p.get_effect();
+            }
+        }
+
+        effect
+    }
+}
+
+
+
 pub struct Global {
-    policy_buff_map : HashMap<String, PolicyBuff>,
+    policy_buff_map : PolicyBuffMap,
     building_buff_map : BuildingBuffMap,
     buildings_map : HashMap<String, Rb>,
     industrial_map: HashMap<String, Rb>,
@@ -109,7 +176,7 @@ impl Global {
 
     pub fn new() -> Global {
         Global {
-            policy_buff_map : HashMap::new(),
+            policy_buff_map : PolicyBuffMap::new(),
             building_buff_map : BuildingBuffMap::new(),
             buildings_map : HashMap::new(),
             industrial_map: HashMap::new(),
@@ -170,12 +237,9 @@ impl Global {
         }
     }
 
-    pub fn add_global_buff(&mut self, buff : PolicyBuff) -> Result<(), ThisError> {
-        let name = buff.get_name().to_string();
-        match self.policy_buff_map.insert(name, buff) {
-            Some(_) => Err("Already exist a global buff has same name"),
-            None => Ok(())
-        }
+    pub fn add_policy_buff(&mut self, buff : PolicyBuff) -> Result<(), ThisError> {
+        self.policy_buff_map.add_policy(buff)?;
+        Ok(())
     }
 
     pub fn get_building_names(&self) -> Vec<String>{
@@ -211,26 +275,21 @@ impl Global {
         result
     }
 
-
+    fn cal_policy_effect(builidng : &Building, map : &PolicyBuffMap, online : bool) -> f64 {
+        map.get_effect(builidng.get_type(), online)
+    }
 
     pub fn get_online_income(&self) -> f64 {
         let mut result = 0.0;
+        let mut effect = 1.0;
 
+        //单个建筑收到的建筑buff后的收入
         for (_ , b) in &self.buildings_map {
-            let effect = 1.0 + Self::cal_building_effect(b.as_ref(), &self.building_buff_map, true);
-            result = result + b.get_income() * effect;
-
-        }
-
-        for (_, gb) in &self.policy_buff_map {
-            result += match gb.get_type() {
-                PolicyBuffType::Industrial => Self::get_class_income(&self.industrial_map, gb.get_effect()),
-                PolicyBuffType::Commercial => Self::get_class_income(&self.commercial_map, gb.get_effect()),
-                PolicyBuffType::Housing => Self::get_class_income(&self.housing_map, gb.get_effect()),
-                PolicyBuffType::All => Self::get_class_income(&self.buildings_map, gb.get_effect()),
-                PolicyBuffType::Online => Self::get_class_income(&self.buildings_map, gb.get_effect()),
-                PolicyBuffType::Offline => 0.0,
-            };
+            effect = 1.0;
+            effect *= 1.0 + Self::cal_building_effect(b.as_ref(), &self.building_buff_map, true);
+            effect *= 1.0 + Self::cal_policy_effect(b.as_ref(), &self.policy_buff_map, true);
+//            effect *= 1.0 + Self::cal_picture_effect(b.as_ref(), &self.picture_buff_map, true);
+            result += b.get_income() * effect;
         }
 
         result

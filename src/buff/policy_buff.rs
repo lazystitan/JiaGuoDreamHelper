@@ -2,6 +2,7 @@ use std::fmt;
 use serde_json::Value;
 use crate::convert::Convert;
 
+#[derive(Eq, PartialEq, Hash)]
 pub enum PolicyBuffType {
     Industrial,
     Commercial,
