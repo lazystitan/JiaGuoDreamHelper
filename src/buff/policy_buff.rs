@@ -4,6 +4,7 @@ use crate::convert::Convert;
 
 #[derive(Eq, PartialEq, Hash)]
 pub enum PolicyBuffType {
+//    Goods,
     Industrial,
     Commercial,
     Housing,

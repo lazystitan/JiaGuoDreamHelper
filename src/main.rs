@@ -47,6 +47,7 @@ fn process() -> Result<(), &'static str> {
     }
 
     println!("{}", g.get_online_income());
+    println!("{}", g.get_offline_income());
 
     println!("{}", g.is_full());
 
@@ -59,5 +60,7 @@ fn main() {
 //    let num : u64 = 50_898_100_000_000;
 //    let num : u64 = 1_787_285_321_811_827_000_000_000;
 //    let num : u64 = 135_169_420_000_000;
+//    let num : u64 = 1_040_106_800_000_000; 1aa 1040t
+//    let num : u64 = 360_291_025_000_000; 0.3aa 360t
 //    test();
 }

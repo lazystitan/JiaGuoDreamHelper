@@ -295,5 +295,22 @@ impl Global {
         result
     }
 
+    pub fn get_offline_income(&self) -> f64 {
+        let mut result = 0.0;
+        let mut effect = 1.0;
+        let offline = false;
+
+        //单个建筑收到的建筑buff后的收入
+        for (_ , b) in &self.buildings_map {
+            effect = 1.0;
+            effect *= 1.0 + Self::cal_building_effect(b.as_ref(), &self.building_buff_map,  offline) * 0.5;
+            effect *= 1.0 + Self::cal_policy_effect(b.as_ref(), &self.policy_buff_map,  offline) * 0.5;
+//            effect *= 1.0 + Self::cal_picture_effect(b.as_ref(), &self.picture_buff_map, offline) * 0.5;
+            result += b.get_income() * effect;
+        }
+
+        result
+    }
+
 
 }
