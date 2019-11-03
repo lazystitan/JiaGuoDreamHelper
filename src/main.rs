@@ -2,6 +2,8 @@ mod buildings;
 mod convert;
 mod global;
 mod buff;
+mod manager;
+mod buff_map;
 
 use std::io;
 use std::io::Read;
@@ -13,6 +15,7 @@ use convert::Convert;
 use buildings::Building;
 use global::Global;
 use buff::PolicyBuff;
+use crate::manager::Manager;
 
 fn read_file(filename : &str) -> Result<String, io::Error> {
     let mut result = String::new();
@@ -31,25 +34,16 @@ fn process() -> Result<(), &'static str> {
         global_buff = Vec::convert(map["policy"].take())?;
     }
 
-    let mut g = Global::new();
-
+    let mut m = Manager::new();
     for b in buildings {
-        g.add_building(b)?;
+        m.add_building(b);
     }
 
-    for b in global_buff {
-        g.add_policy_buff(b)?;
+    for p in global_buff {
+        m.add_policy_buff(p);
     }
 
-    let names = g.get_building_names();
-    for n in &names {
-        println!("{}", n);
-    }
 
-    println!("{}", g.get_online_income());
-    println!("{}", g.get_offline_income());
-
-    println!("{}", g.is_full());
 
     Ok(())
 }

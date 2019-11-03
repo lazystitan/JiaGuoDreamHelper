@@ -4,164 +4,10 @@ use std::rc::Rc;
 use crate::buildings::{Building, BuildingType};
 use crate::buff::{BuildingBuffType, PolicyBuffType, PolicyBuff, BuildingBuff};
 use std::hash::Hash;
+use crate::buff_map::{PolicyBuffMap, BuildingBuffMap};
 
 type Rb = Rc<Building>;
-type Vrb = Vec<Rc<BuildingBuff>>;
 type ThisError = &'static str;
-
-struct BuildingBuffMap (HashMap<BuildingBuffType, Vrb>);
-
-impl BuildingBuffMap {
-    fn new() -> BuildingBuffMap {
-        let mut map = HashMap::new();
-
-        map.insert(BuildingBuffType::Offline,Vec::new());
-        map.insert(BuildingBuffType::All,Vec::new());
-        map.insert(BuildingBuffType::Online,Vec::new());
-        map.insert(BuildingBuffType::Housing,Vec::new());
-        map.insert(BuildingBuffType::Industrial,Vec::new());
-        map.insert(BuildingBuffType::Commercial,Vec::new());
-
-        BuildingBuffMap(map)
-    }
-
-    fn add_normal_buff(&mut self, buff : &Rc<BuildingBuff>) -> Result<(), ThisError> {
-        match self.0.get_mut(&buff.0) {
-            Some(v) => v.push(buff.clone()),
-            None => {
-                if let BuildingBuffType::Normal(s) = &buff.0 {
-                    self.0.insert(BuildingBuffType::Normal(s.clone()), vec![buff.clone()]);
-                } else {
-                    return Err("buff type is not satisfied");
-                }
-            }
-        }
-
-        Ok(())
-    }
-
-    fn add_buff(&mut self, buff : &Rc<BuildingBuff>) -> Result<(), ThisError> {
-        match &buff.0 {
-            BuildingBuffType::Normal(_) => self.add_normal_buff(buff)?,
-            _ => self.0.get_mut(&buff.0).unwrap().push(buff.clone()),
-        }
-        Ok(())
-    }
-
-    fn get_normal_effect(&self, name : &str) -> f64 {
-        let mut result = 0.0;
-        match self.0.get(&BuildingBuffType::Normal(name.to_string())) {
-            Some(v) => {
-                for b in v {
-                    result += b.1
-                }
-                result
-            }
-
-            None => result
-        }
-    }
-
-//    pub struct BuildingBuff(pub BuildingBuffType, pub f64);
-
-    fn get_wide_effect(&self, building_buff_type : &BuildingBuffType) -> f64 {
-        let mut result = 0.0;
-        for b in self.0.get(building_buff_type).unwrap() {
-            result += b.1;
-        }
-        result
-    }
-
-    fn get_industrial_effect(&self) -> f64 {
-        self.get_wide_effect(&BuildingBuffType::Industrial)
-    }
-
-    fn get_commercial_effect(&self) -> f64 {
-        self.get_wide_effect(&BuildingBuffType::Commercial)
-    }
-
-    fn get_housing_effect(&self) -> f64 {
-        self.get_wide_effect(&BuildingBuffType::Housing)
-    }
-
-    fn get_all_effect(&self) -> f64 {
-        self.get_wide_effect(&BuildingBuffType::All)
-    }
-
-    fn get_online_effect(&self) -> f64 {
-        self.get_wide_effect(&BuildingBuffType::Online)
-    }
-
-    fn get_offline_effect(&self) -> f64 {
-        self.get_wide_effect(&BuildingBuffType::Offline)
-    }
-}
-
-///```
-///pub enum PolicyBuffType {
-///    Industrial,
-///    Commercial,
-///    Housing,
-///    All,
-///    Online,
-///    Offline
-///}
-///pub struct PolicyBuff(String, PolicyBuffType, f64);
-/// ```
-
-struct PolicyBuffMap(HashMap<PolicyBuffType, Vec<PolicyBuff>>);
-
-impl PolicyBuffMap {
-    fn new() -> PolicyBuffMap {
-        let mut map = HashMap::new();
-        map.insert(PolicyBuffType::Industrial, Vec::new());
-        map.insert(PolicyBuffType::Commercial, Vec::new());
-        map.insert(PolicyBuffType::Housing, Vec::new());
-        map.insert(PolicyBuffType::All, Vec::new());
-        map.insert(PolicyBuffType::Online, Vec::new());
-        map.insert(PolicyBuffType::Offline, Vec::new());
-
-        PolicyBuffMap(map)
-    }
-
-    fn add_policy(&mut self, policy : PolicyBuff) -> Result<(), ThisError> {
-        self.0.get_mut(policy.get_type()).unwrap().push(policy);
-        Ok(())
-    }
-
-    fn get_effect(&self, building_type : &BuildingType, online : bool) -> f64 {
-        let mut effect = 0.0;
-
-        for p in self.0.get(&PolicyBuffType::All).unwrap() {
-            effect += p.get_effect();
-        }
-
-        let temp;
-        match building_type {
-            BuildingType::Industrial => temp = self.0.get(&PolicyBuffType::Industrial).unwrap(),
-            BuildingType::Commercial => temp = self.0.get(&PolicyBuffType::Commercial).unwrap(),
-            BuildingType::Housing => temp = self.0.get(&PolicyBuffType::Housing).unwrap()
-        }
-
-        for p in temp {
-            effect += p.get_effect();
-        }
-
-        if online {
-            for p in self.0.get(&PolicyBuffType::Online).unwrap() {
-                effect += p.get_effect();
-            }
-        } else {
-            for p in self.0.get(&PolicyBuffType::Offline).unwrap() {
-                effect += p.get_effect();
-            }
-        }
-
-        effect
-    }
-}
-
-
 
 pub struct Global {
     policy_buff_map : PolicyBuffMap,
@@ -209,20 +55,19 @@ impl Global {
 //      buff : Vec<Rc<BuildingBuff>> *
 //    }
 
-    pub fn add_building(&mut self, building : Building) -> Result<(), ThisError> {
+    pub fn add_building(&mut self, building : Rb) -> Result<(), ThisError> {
         let name = building.get_name().to_string();
-        let r = Rc::new(building);
 
         if self.buildings_map.len() == 9 {
             return Err("Not enough space");
         }
 
-        match self.buildings_map.insert(name.clone(), r.clone()) {
+        match self.buildings_map.insert(name.clone(), building.clone()) {
             Some(_) => return Err("Already exist a building has same name"),
             None => ()
         }
         let temp;
-        match r.get_type() {
+        match building.get_type() {
             BuildingType::Industrial => temp = &mut self.industrial_map,
             BuildingType::Commercial => temp = &mut self.commercial_map,
             BuildingType::Housing => temp = &mut self.housing_map,
@@ -231,15 +76,18 @@ impl Global {
         if temp.len() >= 3 {
             Err("Not enough space")
         } else {
-            temp.insert(name.clone(), r.clone());
-            Self::add_building_buff(r.clone(), &mut self.building_buff_map)?;
+            temp.insert(name.clone(), building.clone());
+            Self::add_building_buff(building.clone(), &mut self.building_buff_map)?;
             Ok(())
         }
     }
 
-    pub fn add_policy_buff(&mut self, buff : PolicyBuff) -> Result<(), ThisError> {
-        self.policy_buff_map.add_policy(buff)?;
-        Ok(())
+    pub fn add_policy_buff(&mut self, buff : PolicyBuff) {
+        self.policy_buff_map.add_policy(buff);
+    }
+
+    pub fn add_multiple_policy_buff(&mut self, map : PolicyBuffMap) {
+        self.policy_buff_map = map;
     }
 
     pub fn get_building_names(&self) -> Vec<String>{

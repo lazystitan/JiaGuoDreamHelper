@@ -2,7 +2,7 @@ use std::fmt;
 use serde_json::Value;
 use crate::convert::Convert;
 
-#[derive(Eq, PartialEq, Hash)]
+#[derive(Eq, PartialEq, Hash, Clone)]
 pub enum PolicyBuffType {
 //    Goods,
     Industrial,
@@ -54,6 +54,7 @@ impl Convert<Value> for PolicyBuffType {
     }
 }
 
+#[derive(Clone)]
 pub struct PolicyBuff(String, PolicyBuffType, f64);
 
 impl PolicyBuff {
