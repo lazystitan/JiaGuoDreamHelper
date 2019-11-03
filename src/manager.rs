@@ -30,8 +30,8 @@ impl Manager {
     pub fn add_building(&mut self, building : Building) {
         match building.get_type() {
             BuildingType::Industrial => self.industrial_buildings.push(Rc::new(building)),
-            BuildingType::Commercial => self.industrial_buildings.push(Rc::new(building)),
-            BuildingType::Housing => self.industrial_buildings.push(Rc::new(building)),
+            BuildingType::Commercial => self.commercial_buildings.push(Rc::new(building)),
+            BuildingType::Housing => self.housing_buildings.push(Rc::new(building)),
         }
     }
 
@@ -73,7 +73,7 @@ impl Manager {
         result
     }
 
-    pub fn generate_vector(&self) -> Vec<Vec<Rb>> {
+    fn generate_vector(&self) -> Vec<Vec<Rb>> {
         let mut result = Vec::new();
         let mut industrial = Self::select_three(&self.industrial_buildings);
         let mut commercial = Self::select_three(&self.commercial_buildings);
@@ -91,5 +91,22 @@ impl Manager {
         }
 
         result
+    }
+
+    pub fn get_max_online_income_global(&mut self) -> &Global {
+        let mut max = 0.0;
+        let mut result = 0;
+        for (index, g) in self.globals.iter_mut().enumerate() {
+            let temp = g.get_online_income();
+            if temp > max {
+                result = index;
+            }
+        }
+
+        &self.globals[result]
+    }
+
+    pub fn get_globals(&self) -> &Vec<Global> {
+        &self.globals
     }
 }

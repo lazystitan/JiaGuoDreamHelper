@@ -43,7 +43,14 @@ fn process() -> Result<(), &'static str> {
         m.add_policy_buff(p);
     }
 
+    m.generate_globals();
 
+    let g = m.get_max_online_income_global();
+    for name in g.get_building_names() {
+        println!("{}", name);
+    }
+
+    println!("{}", g.get_online_income());
 
     Ok(())
 }

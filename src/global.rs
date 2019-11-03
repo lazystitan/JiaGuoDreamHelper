@@ -160,5 +160,4 @@ impl Global {
         result
     }
 
-
 }
