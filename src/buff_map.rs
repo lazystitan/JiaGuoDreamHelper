@@ -1,6 +1,6 @@
 use crate::buildings::{Building, BuildingType};
 use std::rc::Rc;
-use crate::buff::{BuildingBuff, BuildingBuffType, PolicyBuffType, PolicyBuff, PictureBuffType, PictureBuff};
+use crate::buff::{BuildingBuff, BuildingBuffType, PolicyBuffType, PolicyBuff, PictureBuffType, PictureBuff, WideBuff};
 use std::collections::HashMap;
 
 type Rb = Rc<Building>;

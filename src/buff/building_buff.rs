@@ -74,7 +74,6 @@ impl Convert<String> for BuildingBuffType {
 pub struct BuildingBuff(pub BuildingBuffType, pub f64);
 
 
-
 impl Convert<Value> for Vec<Rc<BuildingBuff>> {
     type Error = &'static str;
 

@@ -1,8 +1,6 @@
 mod building_buff;
-mod policy_buff;
-mod picture_buff;
-//mod buff;
+mod wide_effect_buff;
+
 
 pub use building_buff::{BuildingBuff, BuildingBuffType};
-pub use policy_buff::{PolicyBuff, PolicyBuffType};
-pub use picture_buff::{PictureBuffType, PictureBuff};
+pub use wide_effect_buff::{PictureBuff, PictureBuffType, PolicyBuff, PolicyBuffType, WideBuff};

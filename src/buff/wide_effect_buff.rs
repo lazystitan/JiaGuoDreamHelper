@@ -2,9 +2,27 @@ use std::fmt;
 use serde_json::Value;
 use crate::convert::Convert;
 
+pub trait WideBuff {
+    type BuffType;
+    fn get_name(&self) -> &str;
+    fn get_type(&self) -> &Self::BuffType;
+    fn get_effect(&self) -> f64;
+}
+
 #[derive(Eq, PartialEq, Hash, Clone)]
 pub enum PolicyBuffType {
-//    Goods,
+    //    Goods,
+    Industrial,
+    Commercial,
+    Housing,
+    All,
+    Online,
+    Offline
+}
+
+#[derive(Clone, Eq, PartialEq, Hash)]
+pub enum PictureBuffType {
+    //    Goods,
     Industrial,
     Commercial,
     Housing,
@@ -57,16 +75,18 @@ impl Convert<Value> for PolicyBuffType {
 #[derive(Clone)]
 pub struct PolicyBuff(String, PolicyBuffType, f64);
 
-impl PolicyBuff {
-    pub fn get_name(&self) -> &str {
+impl WideBuff for PolicyBuff {
+    type BuffType = PolicyBuffType;
+
+    fn get_name(&self) -> &str {
         &self.0
     }
 
-    pub fn get_type(&self) -> &PolicyBuffType {
+    fn get_type(&self) -> &Self::BuffType {
         &self.1
     }
 
-    pub fn get_effect(&self) -> f64 {
+    fn get_effect(&self) -> f64 {
         self.2
     }
 }
@@ -100,5 +120,27 @@ impl Convert<Value> for Vec<PolicyBuff> {
             },
             _ => err
         }
+    }
+}
+
+
+
+
+#[derive(Clone)]
+pub struct PictureBuff(String, PictureBuffType, f64);
+
+impl WideBuff for PictureBuff {
+    type BuffType = PictureBuffType;
+
+    fn get_name(&self) -> &str {
+        &self.0
+    }
+
+    fn get_type(&self) -> &Self::BuffType {
+        &self.1
+    }
+
+    fn get_effect(&self) -> f64 {
+        self.2
     }
 }
